@@ -1,0 +1,26 @@
+# Python
+_pyache_/
+*.py[cod]
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment variables / secrets
+.env
+
+# PyCharm
+.idea/
+
+# Local Data
+data/raw/
+
+# Logs
+*.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hc1
+
