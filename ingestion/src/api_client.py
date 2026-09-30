@@ -13,6 +13,8 @@ from urllib3.util.retry import Retry
 
 from ingestion.src.logger import get_logger
 
+from ingestion.src.azure_storage import upload_file_to_adls
+
 
 # Configuration ------>
 logger = get_logger(__name__)
@@ -95,8 +97,22 @@ def run_ingestion():
     }
 
     file_path = save_raw_data(raw_snapshot)
-
     logger.info("Raw data saved to: %s", file_path)
+
+    remote_file_path = file_path.relative_to(
+        PROJECT_ROOT / "data" / "raw"
+    ).as_posix()
+
+    upload_file_to_adls(
+        local_file_path=file_path,
+        remote_file_path=remote_file_path
+    )
+
+    logger.info(
+        "Raw data uploaded to ADLS: bronze/%s",
+        remote_file_path
+    )
+
     logger.info("Ingestion completed successfully")
 
 # Application Entry Point --------->
