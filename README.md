@@ -58,22 +58,40 @@ The ingestion layer currently includes:
 - Unit tests with pytest
 - Mocked API calls for testing
 
+### Phase 2 - Azure Data Lake Storage Gen2
+
+Phase 2 is complete.
+
+The ingestion pipeline now uploads each raw snapshot to Azure Data Lake Storage Gen2 while keeping the same partitioning structure used locally.
+
+Phase 2 added:
+
+- Azure resource group and ADLS Gen2 storage account
+- Hierarchical namespace for Data Lake semantics
+- Private `bronze` container for raw data
+- Microsoft Entra ID authentication
+- Azure RBAC with `Storage Blob Data Contributor`
+- Local authentication through Azure CLI and `DefaultAzureCredential`
+- ADLS integration using `azure-storage-file-datalake`
+- Partition-preserving uploads to the Bronze layer
+- Unit tests for Azure upload logic using mocks
+
 Current flow:
 
 ```text
 Warsaw API
     |
     v
-Python API Client
+Python Ingestion
     |
-    v
-Response Validation
-    |
-    v
-Metadata
-    |
-    v
-Raw JSON Storage
+    +--------------------+
+    |                    |
+    v                    v
+Local Raw Storage   ADLS Gen2 / Bronze
+                         |
+                         v
+              vehicle_positions/
+              year/month/day/hour
 ```
 
 ## Project Structure
@@ -84,11 +102,13 @@ warsaw-public-transport-data-platform/
 ├── ingestion/
 │   ├── src/
 │   │   ├── api_client.py
+│   │   ├── azure_storage.py
 │   │   ├── logger.py
 │   │   └── storage.py
 │   │
 │   └── tests/
 │       ├── test_api_client.py
+│       ├── test_azure_storage.py
 │       └── test_storage.py
 │
 ├── data/
@@ -266,10 +286,14 @@ Current:
 - Requests
 - Pytest
 - Git
+- Azure Data Lake Storage Gen2
+- Azure Identity
+- Azure CLI
+- Microsoft Entra ID / Azure RBAC
 
 Planned:
 
-- Azure Data Lake Storage Gen2
+
 - Azure Data Factory
 - Azure Databricks
 - PySpark
@@ -282,18 +306,12 @@ Planned:
 
 ## Next Step
 
-Phase 2 will move the raw storage layer from the local filesystem to Azure Data Lake Storage Gen2.
+Phase 3 will introduce Azure Data Factory for orchestration.
 
-The current pipeline:
-
-```text
-Warsaw API -> Python -> Local Raw Storage
-```
-
-will become:
+The current ingestion flow is:
 
 ```text
-Warsaw API -> Python -> Azure Data Lake Storage Gen2
+Warsaw API -> Python -> Local Raw Storage + ADLS Gen2 Bronze
 ```
 
-The existing partitioning structure will be kept so that the cloud storage layout remains consistent with the local implementation.
+The next phase will focus on moving from a manually executed ingestion process toward an orchestrated Azure data pipeline.
